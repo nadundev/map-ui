@@ -47,6 +47,50 @@ function easeInOutCubic(t: number): number {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 }
 
+function animateFill(path: SVGPathElement, targetFill: string, duration: number = 500): void {
+  const startFill = path.getAttribute('fill') || STYLES.DEFAULT_FILL;
+  const startTime = performance.now();
+  
+  function animate(currentTime: number): void {
+    const elapsed = currentTime - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    const easedProgress = easeInOutCubic(progress);
+    
+    // Interpolate between start and target fill colors
+    const interpolatedFill = interpolateColor(startFill, targetFill, easedProgress);
+    path.setAttribute('fill', interpolatedFill);
+    
+    if (progress < 1) {
+      requestAnimationFrame(animate);
+    }
+  }
+  
+  requestAnimationFrame(animate);
+}
+
+function interpolateColor(color1: string, color2: string, factor: number): string {
+  // Simple color interpolation - for more complex colors, you might want a color library
+  if (color1 === color2) return color1;
+  
+  // For hex colors, convert to RGB and interpolate
+  const hex1 = color1.replace('#', '');
+  const hex2 = color2.replace('#', '');
+  
+  const r1 = parseInt(hex1.substr(0, 2), 16);
+  const g1 = parseInt(hex1.substr(2, 2), 16);
+  const b1 = parseInt(hex1.substr(4, 2), 16);
+  
+  const r2 = parseInt(hex2.substr(0, 2), 16);
+  const g2 = parseInt(hex2.substr(2, 2), 16);
+  const b2 = parseInt(hex2.substr(4, 2), 16);
+  
+  const r = Math.round(r1 + (r2 - r1) * factor);
+  const g = Math.round(g1 + (g2 - g1) * factor);
+  const b = Math.round(b1 + (b2 - b1) * factor);
+  
+  return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+}
+
 function animateViewBox(
   svg: SVGElement,
   targetViewBox: [number, number, number, number],
@@ -83,7 +127,7 @@ function resetAllCountries(): void {
   Object.values(COUNTRIES).forEach(country => {
     const path = getElement<SVGPathElement>(`.${country.className}`);
     if (path) {
-      path.setAttribute('fill', STYLES.DEFAULT_FILL);
+      animateFill(path, STYLES.DEFAULT_FILL);
       path.removeAttribute('stroke');
       path.removeAttribute('stroke-width');
     }
@@ -112,8 +156,8 @@ function selectCountry(countryKey: keyof typeof COUNTRIES): void {
   // Animate to new viewBox
   animateViewBox(svg, [viewBoxX, viewBoxY, viewBoxWidth, viewBoxHeight]);
 
-  // Apply selected styling
-  path.setAttribute('fill', STYLES.SELECTED_FILL);
+  // Apply selected styling with smooth animation
+  animateFill(path, STYLES.SELECTED_FILL);
   path.setAttribute('stroke', STYLES.SELECTED_STROKE);
   path.setAttribute('stroke-width', STYLES.SELECTED_STROKE_WIDTH);
 
