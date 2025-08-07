@@ -228,6 +228,7 @@ function initializeApp(): void {
   // Set up HTML structure
   document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
     <div>
+      <h1 class="text-3xl font-bold text-center my-6">Eight 25 Map Demo</h1>
       <button id="usButton" class="${BUTTON_CLASSES.ACTIVE}">United States</button>
       <button id="canadaButton" class="${BUTTON_CLASSES.DEFAULT}">Canada</button>
       <button id="ukButton" class="${BUTTON_CLASSES.DEFAULT}">United Kingdom</button>
